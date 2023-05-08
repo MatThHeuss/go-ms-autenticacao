@@ -3,8 +3,8 @@ package usecases
 import (
 	"context"
 
+	"github.com/MatThHeuss/go-user-microservice/application/mapper"
 	"github.com/MatThHeuss/go-user-microservice/internal/domain/port"
-	"github.com/MatThHeuss/go-user-microservice/internal/mapper"
 	"github.com/MatThHeuss/go-user-microservice/internal/repository"
 )
 
