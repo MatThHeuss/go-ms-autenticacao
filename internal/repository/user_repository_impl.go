@@ -4,17 +4,19 @@ import (
 	"context"
 
 	"github.com/MatThHeuss/go-user-microservice/internal/domain"
+	"go.uber.org/zap"
 )
 
 type PostgreSQLUserRepository struct {
 	*Queries
-	Db PostgreSQLClient
+	Db     PostgreSQLClient
+	logger *zap.Logger
 }
 
-func NewPostgreSQLUserRepository(postgreSQLClient PostgreSQLClient) UserRepository {
+func NewPostgreSQLUserRepository(postgreSQLClient PostgreSQLClient, logger *zap.Logger) UserRepository {
 	postgreSQLUserRepository := &PostgreSQLUserRepository{
 		Db:      postgreSQLClient,
-		Queries: NewQueries(postgreSQLClient),
+		Queries: NewQueries(postgreSQLClient, logger),
 	}
 
 	return postgreSQLUserRepository
@@ -67,7 +69,7 @@ func (u *PostgreSQLUserRepository) execTx(ctx context.Context, fn func(*Queries)
 		return txErr
 	}
 
-	q := NewQueries(tx)
+	q := NewQueries(tx, u.logger)
 	err := fn(q)
 	if err != nil {
 		if rbErr := tx.Rollback(); rbErr != nil {

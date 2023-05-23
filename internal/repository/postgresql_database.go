@@ -5,9 +5,9 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log"
 
 	_ "github.com/lib/pq"
+	"go.uber.org/zap"
 )
 
 type PostgreSQLDbOperation interface {
@@ -29,7 +29,8 @@ type PostgreSQLClient interface {
 }
 
 type Queries struct {
-	Db PostgreSQLDbOperation
+	Db     PostgreSQLDbOperation
+	logger *zap.Logger
 }
 
 type PostgreSQLanitizedError struct {
@@ -40,13 +41,15 @@ func (e PostgreSQLanitizedError) Error() string {
 	return fmt.Sprintf("Database error code: %v. Check logs for more details.", e.Code)
 }
 
-func NewQueries(db PostgreSQLDbOperation) *Queries {
-	return &Queries{Db: db}
+func NewQueries(db PostgreSQLDbOperation, logger *zap.Logger) *Queries {
+	return &Queries{Db: db, logger: logger}
 }
 
-func NewPostgreSQLClient() (PostgreSQLClient, error) {
+func NewPostgreSQLClient(logger *zap.Logger) (PostgreSQLClient, error) {
+	logger.Info("New postgresql client initiate")
 	db, err := sql.Open("postgres", PostgreSQLConnectionString())
 	if err != nil {
+		logger.Error("error to open connection to postgresql", zap.Error(err))
 		return nil, err
 	}
 
@@ -57,6 +60,7 @@ func NewPostgreSQLClient() (PostgreSQLClient, error) {
 	err = HealthCheck(db)
 	if err != nil {
 		db.Close()
+		logger.Fatal("Failed to perform health check on PostgreSQL database", zap.Error(err))
 		return nil, err
 	}
 	return db, nil
@@ -81,7 +85,6 @@ func HealthCheck(db PostgreSQLManager) error {
 	err := db.Ping()
 	if err != nil {
 		errHealthCheck := errors.New(fmt.Sprintf("Failed to perform health check operation on PostgreSQL database. %v", err.Error()))
-		log.Fatal("SQL Database health check. error when doing ping to database", errHealthCheck)
 		return errHealthCheck
 	}
 
