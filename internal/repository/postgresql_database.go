@@ -82,7 +82,6 @@ func HealthCheck(db PostgreSQLManager) error {
 	if err != nil {
 		errHealthCheck := errors.New(fmt.Sprintf("Failed to perform health check operation on PostgreSQL database. %v", err.Error()))
 		log.Fatal("SQL Database health check. error when doing ping to database", errHealthCheck)
-
 		return errHealthCheck
 	}
 

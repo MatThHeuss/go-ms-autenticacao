@@ -8,9 +8,10 @@ import (
 	"github.com/MatThHeuss/go-user-microservice/application/usecases"
 	"github.com/MatThHeuss/go-user-microservice/internal/repository"
 	"github.com/go-chi/chi"
+	"go.uber.org/zap"
 )
 
-func SetupRoutes() http.Handler {
+func SetupRoutes(logger *zap.Logger) http.Handler {
 
 	r := chi.NewRouter()
 	pgCliente, err := repository.NewPostgreSQLClient()
@@ -20,10 +21,11 @@ func SetupRoutes() http.Handler {
 	}
 
 	userRepository := repository.NewPostgreSQLUserRepository(pgCliente)
-	userUseCase := usecases.NewCreateUserUseCase(userRepository)
+	userUseCase := usecases.NewCreateUserUseCase(userRepository, logger)
 	createUserHandler := handler.NewCreateUserHandler(userUseCase)
 
 	r.Post("/users", func(w http.ResponseWriter, r *http.Request) {
+		logger.Info("/users called")
 		err := createUserHandler.Execute(w, r)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
