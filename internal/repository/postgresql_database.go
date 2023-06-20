@@ -63,15 +63,16 @@ func NewPostgreSQLClient(logger *zap.Logger) (PostgreSQLClient, error) {
 		logger.Fatal("Failed to perform health check on PostgreSQL database", zap.Error(err))
 		return nil, err
 	}
+	logger.Info("Connection Ok!")
 	return db, nil
 }
 
 func PostgreSQLConnectionString() string {
 	host := "localhost"
 	port := 5432
-	user := "root"
-	password := "root"
-	dbname := "ms"
+	user := "docker"
+	password := "docker"
+	dbname := "apigolang"
 	timeout := 5
 
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
