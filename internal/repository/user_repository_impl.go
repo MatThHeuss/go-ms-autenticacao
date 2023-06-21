@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"time"
 
 	"github.com/MatThHeuss/go-user-microservice/internal/domain"
 	"go.uber.org/zap"
@@ -9,8 +10,7 @@ import (
 
 type PostgreSQLUserRepository struct {
 	*Queries
-	Db     PostgreSQLClient
-	logger *zap.Logger
+	Db PostgreSQLClient
 }
 
 func NewPostgreSQLUserRepository(postgreSQLClient PostgreSQLClient, logger *zap.Logger) UserRepository {
@@ -23,26 +23,27 @@ func NewPostgreSQLUserRepository(postgreSQLClient PostgreSQLClient, logger *zap.
 }
 
 func (u *PostgreSQLUserRepository) Create(ctx context.Context, user *domain.User) error {
-	ctx, cancel := context.WithTimeout(ctx, 5)
+	ctx, cancel := context.WithTimeout(ctx, time.Second*60)
 	defer cancel()
 
 	err := u.execTx(ctx, func(q *Queries) error {
 		var err error
 		err = q.insert(ctx, user)
 		if err != nil {
+			u.logger.Error("Error in create query", zap.Error(err))
 			return err
 		}
 
 		return nil
 	})
+	u.logger.Error("Error in create query", zap.Error(err))
 	return err
 }
 
 func (q *Queries) insert(ctx context.Context, user *domain.User) error {
-	ctx, cancel := context.WithTimeout(ctx, 5)
-	defer cancel()
+	q.logger.Info("Insert query started")
 
-	query := "INSERT INTO users (id, name, birthday, email, password, role, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+	query := "INSERT INTO users (id, name, birthday, email, password, role, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);"
 
 	_, err := q.Db.ExecContext(ctx, query,
 		user.ID,
@@ -56,6 +57,7 @@ func (q *Queries) insert(ctx context.Context, user *domain.User) error {
 	)
 
 	if err != nil {
+		q.logger.Error("Error in insert query", zap.Error(err))
 		return err
 	}
 
@@ -66,6 +68,7 @@ func (q *Queries) insert(ctx context.Context, user *domain.User) error {
 func (u *PostgreSQLUserRepository) execTx(ctx context.Context, fn func(*Queries) error, tags ...string) error {
 	tx, txErr := u.Db.BeginTx(ctx, nil)
 	if txErr != nil {
+		u.logger.Info("Error to initiate transaction", zap.Error(txErr))
 		return txErr
 	}
 

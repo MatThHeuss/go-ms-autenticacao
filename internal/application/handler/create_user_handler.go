@@ -22,6 +22,7 @@ func NewCreateUserHandler(createUserUseCase port.CreateUserUseCase, logger *zap.
 }
 
 func (c *CreateUserHandler) Execute(w http.ResponseWriter, r *http.Request) error {
+	w.Header().Set("Content-Type", "application/json")
 	ctx := context.Background()
 	payload := port.CreateUserInput{}
 	c.logger.Info("create user Handler initiated")
@@ -36,7 +37,7 @@ func (c *CreateUserHandler) Execute(w http.ResponseWriter, r *http.Request) erro
 	output, err := c.createUserUseCase.Execute(ctx, payload)
 
 	if err != nil {
-		c.logger.Error("Error to execute use case in handler")
+		c.logger.Error("Error to execute use case in handler", zap.Error(err))
 		return err
 	}
 

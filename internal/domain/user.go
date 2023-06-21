@@ -20,7 +20,7 @@ type User struct {
 }
 
 func NewUser(name, email, birthday, password, role string) (*User, error) {
-	password_hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	passwordHash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, err
 	}
@@ -30,7 +30,7 @@ func NewUser(name, email, birthday, password, role string) (*User, error) {
 		Name:      name,
 		Birthday:  birthday,
 		Email:     email,
-		Password:  string(password_hash),
+		Password:  string(passwordHash),
 		Role:      "user",
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),

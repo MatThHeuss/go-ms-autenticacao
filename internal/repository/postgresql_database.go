@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"time"
 
 	_ "github.com/lib/pq"
 	"go.uber.org/zap"
@@ -55,7 +56,7 @@ func NewPostgreSQLClient(logger *zap.Logger) (PostgreSQLClient, error) {
 
 	db.SetMaxOpenConns(1)
 	db.SetMaxOpenConns(1)
-	db.SetConnMaxLifetime(5)
+	db.SetConnMaxLifetime(time.Second * 10)
 
 	err = HealthCheck(db)
 	if err != nil {
@@ -73,7 +74,7 @@ func PostgreSQLConnectionString() string {
 	user := "docker"
 	password := "docker"
 	dbname := "apigolang"
-	timeout := 5
+	timeout := int(time.Second * 5)
 
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
 		"password=%s dbname=%s sslmode=disable connect_timeout=%v",

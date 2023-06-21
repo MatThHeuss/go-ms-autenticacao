@@ -2,8 +2,7 @@ package usecases
 
 import (
 	"context"
-
-	"github.com/MatThHeuss/go-user-microservice/application/mapper"
+	"github.com/MatThHeuss/go-user-microservice/internal/application/mapper"
 	"github.com/MatThHeuss/go-user-microservice/internal/domain/port"
 	"github.com/MatThHeuss/go-user-microservice/internal/repository"
 	"go.uber.org/zap"

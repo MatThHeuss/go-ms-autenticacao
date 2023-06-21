@@ -1,10 +1,9 @@
 package main
 
 import (
-	"log"
+	"github.com/MatThHeuss/go-user-microservice/internal/application/router"
 	"net/http"
 
-	"github.com/MatThHeuss/go-user-microservice/application/router"
 	"go.uber.org/zap"
 )
 
@@ -16,5 +15,5 @@ func main() {
 		zap.String("Port", "8080"),
 	)
 
-	log.Fatal(http.ListenAndServe(":8080", router.SetupRoutes(logger)))
+	http.ListenAndServe(":8080", router.SetupRoutes(logger))
 }
