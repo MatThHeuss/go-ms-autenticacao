@@ -2,8 +2,6 @@ package repository
 
 import (
 	"context"
-	"time"
-
 	"github.com/MatThHeuss/go-user-microservice/internal/domain"
 	"go.uber.org/zap"
 )
@@ -23,8 +21,8 @@ func NewPostgreSQLUserRepository(postgreSQLClient PostgreSQLClient, logger *zap.
 }
 
 func (u *PostgreSQLUserRepository) Create(ctx context.Context, user *domain.User) error {
-	ctx, cancel := context.WithTimeout(ctx, time.Second*60)
-	defer cancel()
+	//ctx, cancel := context.WithTimeout(ctx, time.Second*60)
+	//defer cancel()
 
 	err := u.execTx(ctx, func(q *Queries) error {
 		var err error
@@ -38,6 +36,24 @@ func (u *PostgreSQLUserRepository) Create(ctx context.Context, user *domain.User
 	})
 	u.logger.Error("Error in create query", zap.Error(err))
 	return err
+}
+
+func (u *PostgreSQLUserRepository) FindByEmail(ctx context.Context, email string) (*domain.User, error) {
+	//ctx, cancel := context.WithTimeout(ctx, time.Second*60)
+	//defer cancel()
+	query := "SELECT id, name, birthday, email, role, created_at, updated_at FROM users WHERE email = $1"
+
+	row := u.Db.QueryRowContext(
+		ctx, query, email,
+	)
+
+	var user domain.User
+	if err := row.Scan(&user.ID, &user.Name, &user.Birthday, &user.Email, &user.Role, &user.CreatedAt, &user.UpdatedAt); err != nil {
+		u.logger.Error("Error scaning user", zap.Error(err))
+		return nil, err
+	}
+
+	return &user, nil
 }
 
 func (q *Queries) insert(ctx context.Context, user *domain.User) error {

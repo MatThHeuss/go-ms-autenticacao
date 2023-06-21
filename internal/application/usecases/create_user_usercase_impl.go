@@ -2,6 +2,7 @@ package usecases
 
 import (
 	"context"
+	"errors"
 	"github.com/MatThHeuss/go-user-microservice/internal/application/mapper"
 	"github.com/MatThHeuss/go-user-microservice/internal/domain/port"
 	"github.com/MatThHeuss/go-user-microservice/internal/repository"
@@ -29,6 +30,18 @@ func (c *CreateUserUseCaseImpl) Execute(ctx context.Context, input port.CreateUs
 	if err != nil {
 		c.logger.Error("Error mapping user input to user entity", zap.Error(err))
 		return nil, err
+	}
+
+	user, err := c.createUserRepository.FindByEmail(ctx, userEntity.Email)
+
+	if err != nil {
+		c.logger.Error("Error getting user", zap.Error(err))
+		return nil, err
+	}
+
+	if user != nil {
+		c.logger.Info("User already exists")
+		return nil, errors.New("user already exists. Please login in your account")
 	}
 
 	err = c.createUserRepository.Create(ctx, userEntity)

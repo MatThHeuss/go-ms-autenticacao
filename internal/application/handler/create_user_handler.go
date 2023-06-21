@@ -37,8 +37,9 @@ func (c *CreateUserHandler) Execute(w http.ResponseWriter, r *http.Request) erro
 	output, err := c.createUserUseCase.Execute(ctx, payload)
 
 	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
 		c.logger.Error("Error to execute use case in handler", zap.Error(err))
-		return err
+		return json.NewEncoder(w).Encode(err.Error())
 	}
 
 	w.WriteHeader(http.StatusOK)
