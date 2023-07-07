@@ -41,14 +41,14 @@ func (u *PostgreSQLUserRepository) Create(ctx context.Context, user *domain.User
 func (u *PostgreSQLUserRepository) FindByEmail(ctx context.Context, email string) (*domain.User, error) {
 	//ctx, cancel := context.WithTimeout(ctx, time.Second*60)
 	//defer cancel()
-	query := "SELECT id, name, birthday, email, role, created_at, updated_at FROM users WHERE email = $1"
+	query := "SELECT id, name, birthday, email, password, role, created_at, updated_at FROM users WHERE email = $1"
 
 	row := u.Db.QueryRowContext(
 		ctx, query, email,
 	)
 
 	var user domain.User
-	if err := row.Scan(&user.ID, &user.Name, &user.Birthday, &user.Email, &user.Role, &user.CreatedAt, &user.UpdatedAt); err != nil {
+	if err := row.Scan(&user.ID, &user.Name, &user.Birthday, &user.Email, &user.Password, &user.Role, &user.CreatedAt, &user.UpdatedAt); err != nil {
 		u.logger.Error("Error scaning user", zap.Error(err))
 		return nil, err
 	}

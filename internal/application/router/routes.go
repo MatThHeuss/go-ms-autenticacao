@@ -21,8 +21,9 @@ func SetupRoutes(logger *zap.Logger) http.Handler {
 
 	userRepository := repository.NewPostgreSQLUserRepository(pgClient, logger)
 	userUseCase := usecases.NewCreateUserUseCase(userRepository, logger)
+	loginUseCase := usecases.NewLoginUseCase(userRepository, logger)
 	createUserHandler := handler.NewCreateUserHandler(userUseCase, logger)
-
+	loginHandler := handler.NewLoginHandler(loginUseCase, logger)
 	r.Post("/users", func(w http.ResponseWriter, r *http.Request) {
 		logger.Info("/users called")
 		err := createUserHandler.Execute(w, r)
@@ -32,6 +33,18 @@ func SetupRoutes(logger *zap.Logger) http.Handler {
 			return
 		} else {
 			logger.Info("createUserHandler executed successfully")
+		}
+	})
+
+	r.Post("/login", func(w http.ResponseWriter, r *http.Request) {
+		logger.Info("login called")
+		err := loginHandler.Execute(w, r)
+		if err != nil {
+			logger.Error("Error executing loginHandler", zap.Error(err))
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		} else {
+			logger.Info("Login Handler executed successfully")
 		}
 	})
 

@@ -28,17 +28,17 @@ func (l LoginImplementation) Execute(ctx context.Context, input port.LoginInput)
 	user, err := l.userRepository.FindByEmail(ctx, input.Email)
 	if err != nil {
 		l.logger.Error("Error getting user", zap.Error(err))
-		return nil, err
+		return nil, errors.New("invalid credentials")
 	}
 
 	if user == nil {
 		l.logger.Info("User not found")
-		return nil, errors.New("Invalid credentials.")
+		return nil, errors.New("invalid credentials")
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(input.Password))
 	if err != nil {
-		return nil, errors.New("Invalid credentials.")
+		return nil, errors.New("invalid credentials")
 	}
 	accessToken := auth.CreateToken(user)
 
