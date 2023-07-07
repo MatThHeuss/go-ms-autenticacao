@@ -1,7 +1,9 @@
 package router
 
 import (
+	"encoding/json"
 	"github.com/MatThHeuss/go-user-microservice/internal/application/handler"
+	"github.com/MatThHeuss/go-user-microservice/internal/application/middlewares"
 	"github.com/MatThHeuss/go-user-microservice/internal/application/usecases"
 	"net/http"
 
@@ -46,6 +48,11 @@ func SetupRoutes(logger *zap.Logger) http.Handler {
 		} else {
 			logger.Info("Login Handler executed successfully")
 		}
+	})
+
+	r.With(middlewares.JWTMiddleware).Post("/ping", func(w http.ResponseWriter, r *http.Request) {
+		logger.Info("Ping")
+		json.NewEncoder(w).Encode("pong")
 	})
 
 	return r
